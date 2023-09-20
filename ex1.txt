@@ -1,0 +1,5 @@
+if [ $# = 0 ]
+then 
+  echo " Nenhum parâmetro inserido. Por favor tente outra vez"
+else
+  ...

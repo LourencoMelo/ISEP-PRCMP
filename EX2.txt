@@ -1,0 +1,118 @@
+testarFicheiro () {
+	if [ -f $1 ]
+	then 
+		is=1
+	else
+		is=0
+	fi
+}
+testarPorta () {
+	if [ $1 -ge 1 ] && [ $1 -le 65535 ]
+	then
+			val=1
+	else 
+			val=0
+	fi	
+}
+testarH () {
+	testarFicheiro $2
+	if [ "$1 == "-h" ] && [$iss -eq 1]
+	then
+		h=1
+	else 
+		h=0
+	fi
+}
+Testarparametro () {
+	if [ "$#" -eq "4" ]
+	then 
+		testarH $3 $4
+		if { $h -eq 1 ]
+		then
+			if [ "$1" == "-n" ]
+			then
+				testarPorta $2
+				if [ $val -eq 1 ]
+				then 
+					opcao=n
+				else
+					exit 0
+				fi
+			elif [ "$1" == "-f" ]
+			then 
+				testarFicheiro $2
+				if [ $is -eq 1 ]
+				then 
+					opcao=fi
+				else
+					exit 0
+				fi
+			else
+				exit 0
+			fi
+		else
+			exit 0
+		fi
+	else
+		exit 0
+	fi	
+}
+testarAtivacao () {
+	sucesso=$((´nc -zvwl $1 $2 2>&1 | grep -c "succeded"´))
+	if  [ $sucesso -eq 1]º
+	then 
+		ativo=1
+	fi
+]
+
+ATIVAS=()
+INATIVAS=()
+INVALIDAS=()
+ativo=0	
+
+if [ "$opcao" == "n" ]
+then 
+	for host in ´cat $4´
+	do 
+		testarAtivacao $host $2
+	done
+	if [ $ativo -eq 1]
+	then 
+		ATIVAS+=" $2"
+	else
+		INATIVAS+=" $2"
+	fi
+elif [ "$opcao" == "f" ]
+then
+	for port in ´cat $2´
+	do
+		ativo=0
+		testarPorta $port
+		if [ $val -eq 1]
+		then
+			for host in ´cat $4´
+			do 
+				testarAtivacao $host $port
+			done
+			if [ $ativo -eq 1]
+			then 
+				ATIVAS+=" $port"
+			else
+				INATIVAS+=" $port"
+			fi
+		else
+			INVALIDAS+=" $port"
+		fi
+	done
+fi
+
+rm -f scan_report.txt
+touch scan_report.txt
+
+echo "Portas ativas:" >> scan_report.txt
+echo $ATIVAS >> scan_report.txt
+echo "Portas inativas:" >> scan_report.txt
+echo $INATIVAS >> scan_report.txt
+echo "Portas invalidas:" >> scan_report.txt
+echo $INVALIDAS >> scan_report.txt	
+	
